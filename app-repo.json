@@ -1,0 +1,17 @@
+{
+  "name": "Pyoncord App Repo",
+  "apps": [
+    {
+      "name": "Pyoncord",
+      "bundleIdentifier": "com.pyoncord.pyoncord",
+      "developerName": "Pylix",
+      "iconURL": "",
+      "localizedDescription": "A client mod for Discord",
+      "subtitle": "A client mod for Discord",
+      "tintColor": "7289da",
+      "versions": [],
+      "appPermissions": {}
+    }
+  ],
+  "news": []
+}
