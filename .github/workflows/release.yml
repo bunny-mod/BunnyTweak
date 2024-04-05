@@ -1,0 +1,133 @@
+name: Release Pyoncord
+
+on:
+   workflow_dispatch:
+    inputs:
+        ipa_url:
+            description: "Direct link to the decrypted IPA"
+            default: ""
+            required: true
+            type: string
+
+jobs:
+  build-tweak:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Check cache
+        run: |
+          echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
+
+      - name: Use cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/theos
+          key: ${{ runner.os }}-${{ env.upstream_heads }}
+
+      - name: Prepare Theos
+        uses: Randomblock1/theos-action@v1
+
+      - name: Build packages
+        run: |
+          export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
+          export THEOS="${{ github.workspace }}/theos"
+          rm -rf packages && make clean && make package FINALPACKAGE=1 && make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: "package"
+          path: ${{ github.workspace }}/packages/*-arm.deb
+
+      - name: Upload rootless package
+        uses: actions/upload-artifact@v4
+        with:
+          name: "rootless package"
+          path: ${{ github.workspace }}/packages/*-arm64.deb
+
+  build-ipa:
+    runs-on: macos-14
+    needs: build-tweak
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Download and Unzip Orion
+        run: |
+          curl -L -o Orion.zip https://github.com/theos/orion/releases/download/1.0.1/Orion_1.0.1.zip
+          unzip Orion.zip
+
+      - name: Download Discord IPA
+        run: |
+          curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
+
+      - name: Extract Package and Version
+        run: |
+          PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
+          VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
+          DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
+          echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
+
+      - name: Inject tweak
+        run: |
+          mkdir -p ${{ github.workspace }}/build
+          git clone https://github.com/Al4ise/Azule.git
+          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f ${{ github.workspace }}/dev.theos.orion14_1.0.1_iphoneos-arm.deb ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
+          mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/Pyoncord.ipa"
+
+      - name: Upload Pyoncord.ipa as artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: ipa
+            path: ${{ github.workspace }}/build/Pyoncord.ipa
+
+  release-pyoncord:
+    runs-on: macos-14
+    needs: build-ipa
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Extract Package File Names and Discord Version
+        run: |
+          PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
+          VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
+          DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
+          echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
+          ROOTLESS_DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
+          echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
+          unzip -q Pyoncord.ipa
+          DISCORD_VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
+          echo "DISCORD_VERSION=$DISCORD_VERSION" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.DISCORD_VERSION }}
+          files: |
+            ${{ env.DEB_FILE_NAME }}
+            ${{ env.ROOTLESS_DEB_FILE_NAME }}
+            Pyoncord.ipa
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          token: ${{ env.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

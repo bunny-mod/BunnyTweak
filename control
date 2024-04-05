@@ -1,9 +1,9 @@
-Package: com.pyoncord.bunny
-Name: bunny
+Package: com.pyoncord.pyoncord
+Name: pyoncord
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: A mod for Discord's mobile apps.
-Maintainer: FieryFlames
+Maintainer: Pylix
 Author: FieryFlames
 Icon: https://avatars.githubusercontent.com/u/112445065
 Section: Tweaks

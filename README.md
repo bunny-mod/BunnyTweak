@@ -1,13 +1,10 @@
-> [!NOTE]
-> This tweak was desperately forked from VendettaTweak. I may not have the expertise to maintain or expand this tweak beyond its current state
-
 # PyoncordTweak
 
 A rootful/rootless tweak to inject [Pyoncord](https://github.com/pyoncord/Pyoncord) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [PyoncordXposed](https://github.com/pyoncord/PyoncordXposed) behavior. There are still slight differences between these two, and this tweak may be missing some loader features.
 
 ## Installation
 
-Builds can be found in the [Actions](https://github.com/pyoncord/PyoncordTweak/actions/workflows/build.yml) tab.
+Builds can be found in the [Releases](https://github.com/pyoncord/PyoncordTweak/releases/latest) tab.
 
 ### Jailbroken (Rootful/Rootless)
 
@@ -58,3 +55,4 @@ The resulting `.deb` files will be in the `packages` folder. As a reminder, `*ar
 If you want to contribute, you will basically need to follow the steps for [Building PyoncordTweak locally](#building-pyoncordtweak-locally), as well as run `make spm` for the Swift LSP to work.
 
 <!-- @vladdy was here, battling all these steps so you don't have to. Have fun! :3 -->
+<!-- @castdrian also was here simplifying these steps immensely -->
