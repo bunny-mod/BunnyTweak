@@ -152,7 +152,7 @@ jobs:
           DATE=$(date -u +"%Y-%m-%d")
           IPA_SIZE=$(ls -l Pyoncord.ipa | awk '{print $5}')
           NEW_ENTRY=$(jq -n --arg version "$VERSION" --arg date "$DATE" --arg size "$IPA_SIZE" --arg downloadURL "https://github.com/pyoncord/PyoncordTweak/releases/download/v$VERSION/Pyoncord.ipa" '{version: $version, date: $date, size: ($size | tonumber), downloadURL: $downloadURL}')
-          jq --argjson newEntry "$NEW_ENTRY" '.apps[0].versions |= [$newEntry] + .' app-repo.json > temp.json && mv app-repo.json
+          jq --argjson newEntry "$NEW_ENTRY" '.apps[0].versions |= [$newEntry] + .' app-repo.json > temp.json && mv temp.json app-repo.json
         
       - uses: EndBug/add-and-commit@v9
         with:
