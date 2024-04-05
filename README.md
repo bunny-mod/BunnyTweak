@@ -12,7 +12,7 @@ Builds can be found in the [Releases](https://github.com/pyoncord/PyoncordTweak/
 1. Install Pyoncord by downloading the appropriate `.deb` file (or by building your own, see [Building PyoncordTweak locally](#building-pyoncordtweak-locally)). Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks.
 
 ### Non-Jailbroken
-
+<a href="https://tinyurl.com/3kez33jr"><img src="https://i.imgur.com/46qhEAv.png" width="230"></a>
 1. Download and install `Pyoncord.ipa` using your preferred sideloading method.
 
 ## Building PyoncordTweak locally
