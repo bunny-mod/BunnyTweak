@@ -172,15 +172,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract Values
+      - name: Extract App Name
         run: |
           NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
-          PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
-          VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
-          DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
-          echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
-          ROOTLESS_DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
-          echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
           echo "APP_NAME=$NAME" >> $GITHUB_ENV
 
       - name: Download IPA artifact
