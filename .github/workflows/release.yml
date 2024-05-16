@@ -8,14 +8,7 @@ on:
             default: ""
             required: true
             type: string
-
-env: 
-  upstream_heads:
-  APP_NAME:
-  DISCORD_VERSION:
-  DEB_FILE_NAME:
-  ROOTLESS_DEB_FILE_NAME:
-
+            
 jobs:
   build-tweak:
     runs-on: macos-14
@@ -179,6 +172,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Extract Values
+        run: |
+          NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
+          PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
+          VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
+          DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
+          echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
+          ROOTLESS_DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
+          echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
+          echo "APP_NAME=$NAME" >> $GITHUB_ENV
+
       - name: Download IPA artifact
         uses: actions/download-artifact@v4
         with:
@@ -186,13 +190,11 @@ jobs:
         
       - name: Update app-repo.json
         run: |
-          NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
-          echo "APP_NAME=$NAME" >> $GITHUB_ENV
           unzip -q ${{ env.APP_NAME }}.ipa
           VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
           DATE=$(date -u +"%Y-%m-%d")
           IPA_SIZE=$(ls -l ${{ env.APP_NAME }}.ipa | awk '{print $5}')
-          NEW_ENTRY=$(jq -n --arg version "$VERSION" --arg date "$DATE" --arg size "$IPA_SIZE" --arg downloadURL "https://github.com/${{ github.action_repository }}/releases/download/v$VERSION/${{ env.APP_NAME }}.ipa" '{version: $version, date: $date, size: ($size | tonumber), downloadURL: $downloadURL}')
+          NEW_ENTRY=$(jq -n --arg version "$VERSION" --arg date "$DATE" --arg size "$IPA_SIZE" --arg downloadURL "https://github.com/${{ github.repository }}/releases/download/v$VERSION/${{ env.APP_NAME }}.ipa" '{version: $version, date: $date, size: ($size | tonumber), downloadURL: $downloadURL}')
           jq --argjson newEntry "$NEW_ENTRY" '.apps[0].versions |= [$newEntry] + .' app-repo.json > temp.json && mv temp.json app-repo.json
         
       - uses: EndBug/add-and-commit@v9
@@ -200,3 +202,4 @@ jobs:
           default_author: github_actions
           message: "chore: update app-repo.json"
           add: app-repo.json
+          
