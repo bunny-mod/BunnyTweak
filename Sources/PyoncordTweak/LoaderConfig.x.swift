@@ -12,16 +12,13 @@ struct CustomLoadUrl: Codable {
 
 struct LoaderConfig: Codable {
   let customLoadUrl: CustomLoadUrl
-  let loadReactDevTools: Bool
-  var loadPyoncord: Bool? = nil
 }
 
 let defaultLoaderConfig = LoaderConfig(
   customLoadUrl: CustomLoadUrl(
     enabled: false,
     url: URL(string: "http://localhost:4040/bunny.js")!
-  ),
-  loadReactDevTools: false
+  )
 )
 
 let pyoncordDirectory = getPyoncordDirectory()

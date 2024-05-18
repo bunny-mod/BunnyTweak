@@ -40,7 +40,7 @@ class LoadHook: ClassHook<RCTCxxBridge> {
 
     let pyoncordDirectory = getPyoncordDirectory()
 
-    var bundle = try? Data(contentsOf: pyoncordDirectory.appendingPathComponent("bunny.js"))
+    var bundle = try? Data(contentsOf: pyoncordDirectory.appendingPathComponent("bundle.js"))
 
     let group = DispatchGroup()
 
@@ -52,13 +52,8 @@ class LoadHook: ClassHook<RCTCxxBridge> {
         loaderConfig.customLoadUrl.url.absoluteString)
       bundleUrl = loaderConfig.customLoadUrl.url
     } else {
-      if loaderConfig.loadPyoncord == true {
-        bundleUrl = URL(
-          string: "https://raw.githubusercontent.com/pyoncord/pyoncord/builds/pyoncord.js")!
-      } else {
-        bundleUrl = URL(
-          string: "https://raw.githubusercontent.com/pyoncord/detta-builds/main/bunny.js")!
-      }
+      bundleUrl = URL(
+        string: "https://raw.githubusercontent.com/pyoncord/bunny-builds/main/bunny.js")!
     }
 
     os_log("Fetching JS bundle", log: pyoncordLog, type: .info)
@@ -75,7 +70,7 @@ class LoadHook: ClassHook<RCTCxxBridge> {
       if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
         os_log("Successfully fetched JS Bundle", log: pyoncordLog, type: .debug)
         bundle = data
-        try? bundle?.write(to: pyoncordDirectory.appendingPathComponent("bunny.js"))
+        try? bundle?.write(to: pyoncordDirectory.appendingPathComponent("bundle.js"))
 
         let etag = httpResponse.allHeaderFields["Etag"] as? String
         try? etag?.write(
@@ -131,12 +126,18 @@ class LoadHook: ClassHook<RCTCxxBridge> {
 }
 
 struct PyoncordTweak: Tweak {
-    func tweakDidActivate() {
-      if let themeData = try? Data(
-      contentsOf: pyoncordDirectory.appendingPathComponent("current-theme.json")) {
-        let theme = try? JSONDecoder().decode(Theme.self, from: themeData)
-        if let semanticColors = theme?.data.semanticColors { swizzleDCDThemeColor(semanticColors) }
-        if let rawColors = theme?.data.rawColors { swizzleUIColor(rawColors) }
-      }
+  func tweakDidActivate() {
+    if let themeData = try? Data(
+    contentsOf: pyoncordDirectory.appendingPathComponent("current-theme.json")) {
+      let theme = try? JSONDecoder().decode(Theme.self, from: themeData)
+      if let semanticColors = theme?.data.semanticColors { swizzleDCDThemeColor(semanticColors) }
+      if let rawColors = theme?.data.rawColors { swizzleUIColor(rawColors) }
     }
+
+    if let fontData = try? Data(
+    contentsOf: pyoncordDirectory.appendingPathComponent("fonts.json")) {
+      let fonts = try? JSONDecoder().decode(FontDefinition.self, from: fontData)
+      if let main = fonts?.main { patchFonts(main, fontDefName: fonts!.name) }
+    }
+  }
 }
