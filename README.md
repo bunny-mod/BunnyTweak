@@ -15,8 +15,10 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 1. Install the Orion runtime via your preferred package manager, by adding `https://repo.chariz.com/` to your sources, then finding `Orion Runtime`.
 1. Install Bunny by downloading the appropriate `.deb` file (or by building your own, see [Building BunnyTweak locally](#building-bunnytweak-locally)). Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks.
 
-### Non-Jailbroken
+### Jailed
+
 <a href="https://tinyurl.com/yh455zk6"><img src="https://i.imgur.com/46qhEAv.png" width="230"></a>
+
 1. Download and install `Bunny.ipa` using your preferred sideloading method.
 
 ## Building BunnyTweak locally
