@@ -68,13 +68,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: ${{ github.workspace }}/packages/*-arm.deb
+          path: |
+            ${{ github.workspace }}/*-arm.deb
+            ${{ github.workspace }}/packages/*-arm.deb
 
       - name: Upload rootless package
         uses: actions/upload-artifact@v4
         with:
           name: rootless package
-          path: ${{ github.workspace }}/packages/*-arm64.deb
+          path: |
+            ${{ github.workspace }}/*-arm64.deb
+            ${{ github.workspace }}/packages/*-arm64.deb
 
   build-ipa:
     runs-on: ubuntu-latest
