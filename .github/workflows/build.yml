@@ -29,11 +29,9 @@ jobs:
             echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
             exit 0
           fi
-
           release_info=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest)
           release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
           control_version=$(grep '^Version:' control | cut -d ' ' -f 2)
-
           if [ "$release_version" = "$control_version" ]; then
             echo "Versions match. Downloading DEB files..."
             echo "$release_info" | jq -r '.assets[] | select(.name | endswith(".deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
@@ -64,21 +62,27 @@ jobs:
         if: env.DEB_DOWNLOADED == 'false'
         run: make package FINALPACKAGE=1 && make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
 
+      - name: Set DEB path
+        run: |
+          if [ "${{ env.DEB_DOWNLOADED }}" == "true" ]; then
+            echo "DEB_PATH=${{ github.workspace }}/*-arm.deb" >> $GITHUB_ENV
+            echo "ROOTLESS_DEB_PATH=${{ github.workspace }}/*-arm64.deb" >> $GITHUB_ENV
+          else
+            echo "DEB_PATH=${{ github.workspace }}/packages/*-arm.deb" >> $GITHUB_ENV
+            echo "ROOTLESS_DEB_PATH=${{ github.workspace }}/packages/*-arm64.deb" >> $GITHUB_ENV
+          fi
+
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: |
-            ${{ github.workspace }}/*-arm.deb
-            ${{ github.workspace }}/packages/*-arm.deb
+          path: ${{ env.DEB_PATH }}
 
       - name: Upload rootless package
         uses: actions/upload-artifact@v4
         with:
           name: rootless package
-          path: |
-            ${{ github.workspace }}/*-arm64.deb
-            ${{ github.workspace }}/packages/*-arm64.deb
+          path: ${{ env.ROOTLESS_DEB_PATH }}
 
   build-ipa:
     runs-on: ubuntu-latest
@@ -100,11 +104,9 @@ jobs:
         run: |
           curl -L -o Orion.zip $(curl -s https://api.github.com/repos/theos/orion/releases/latest | jq -r '.assets[0].browser_download_url')
           unzip Orion.zip
-
       - name: Download Discord IPA
         run: |
           curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
-
       - name: Make patcher directory
         run: mkdir patcher
 
@@ -113,12 +115,10 @@ jobs:
         run: |
           curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.linux-amd64
           chmod +x patcher
-
       - name: Download IPA icons
         working-directory: patcher
         run: |
           curl -L -o ipa-icons.zip https://raw.githubusercontent.com/pyoncord/assets/main/ipa-icons.zip
-
       - name: Extract Values
         run: |
           NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
@@ -127,14 +127,12 @@ jobs:
           DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm.deb"
           echo "DEB_FILE_NAME=$DEB_FILE_NAME" >> $GITHUB_ENV
           echo "APP_NAME=$NAME" >> $GITHUB_ENV
-
       - name: Inject tweak
         run: |
           mkdir -p ${{ github.workspace }}/build
           git clone https://github.com/Al4ise/Azule.git
-          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/*-arm.deb
+          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
           mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa"
-
       - name: Patch Discord
         working-directory: patcher
         run : |
