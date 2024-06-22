@@ -179,7 +179,7 @@ jobs:
       - name: Extract Discord Version
         run: |
           unzip -q ${{ env.APP_NAME }}.ipa
-          DISCORD_VERSION=$(plistutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
+          DISCORD_VERSION=$(xmllint --xpath 'string(//key[. = "CFBundleShortVersionString"]/following-sibling::string[1])' Payload/Discord.app/Info.plist)
           echo "DISCORD_VERSION=$DISCORD_VERSION" >> $GITHUB_ENV
 
       - name: Create GitHub Release
@@ -220,7 +220,7 @@ jobs:
       - name: Update app-repo.json
         run: |
           unzip -q ${{ env.APP_NAME }}.ipa
-          VERSION=$(plistutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
+          VERSION=$(xmllint --xpath 'string(//key[. = "CFBundleShortVersionString"]/following-sibling::string[1])' Payload/Discord.app/Info.plist)
           DATE=$(date -u +"%Y-%m-%d")
           IPA_SIZE=$(ls -l ${{ env.APP_NAME }}.ipa | awk '{print $5}')
           DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v$VERSION/${{ env.APP_NAME }}.ipa
