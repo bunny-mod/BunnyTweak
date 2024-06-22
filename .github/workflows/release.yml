@@ -89,6 +89,9 @@ jobs:
         with:
           merge-multiple: true
 
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install libplist-utils xmlstarlet libxml2-utils -y
+
       - name: Download and Unzip Orion
         run: |
           curl -L -o Orion.zip $(curl -s https://api.github.com/repos/theos/orion/releases/latest | jq -r '.assets[0].browser_download_url')
@@ -170,6 +173,9 @@ jobs:
         with:
           merge-multiple: true
 
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install libplist-utils xmlstarlet libxml2-utils -y
+
       - name: Extract Discord Version
         run: |
           unzip -q ${{ env.APP_NAME }}.ipa
@@ -207,6 +213,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ipa
+
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install libplist-utils xmlstarlet libxml2-utils -y
         
       - name: Update app-repo.json
         run: |

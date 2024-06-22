@@ -89,6 +89,9 @@ jobs:
         with:
           merge-multiple: true
 
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install libplist-utils xmlstarlet libxml2-utils -y
+
       - name: Download and Unzip Orion
         run: |
           curl -L -o Orion.zip $(curl -s https://api.github.com/repos/theos/orion/releases/latest | jq -r '.assets[0].browser_download_url')
