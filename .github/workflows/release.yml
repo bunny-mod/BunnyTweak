@@ -227,8 +227,8 @@ jobs:
           NEW_ENTRY=$(jq -n --arg version "$VERSION" --arg date "$DATE" --arg size "$IPA_SIZE" --arg downloadURL "$DOWNLOAD_URL" '{version: $version, date: $date, size: ($size | tonumber), downloadURL: $downloadURL}')
           jq --argjson newEntry "$NEW_ENTRY" '.apps[0].versions |= [$newEntry] + .' app-repo.json > temp.json && mv temp.json app-repo.json
         
-    #   - uses: EndBug/add-and-commit@v9
-    #     with:
-    #       default_author: github_actions
-    #       message: "chore: update app-repo.json"
-    #       add: app-repo.json
+      - uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: "chore: update app-repo.json"
+          add: app-repo.json
