@@ -108,7 +108,7 @@ jobs:
         working-directory: patcher
         run: |
           mkdir patcher
-          curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.mac-amd64
+          curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.linux-amd64
           chmod +x patcher
 
       - name: Download IPA icons
