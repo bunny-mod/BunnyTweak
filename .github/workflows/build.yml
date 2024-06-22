@@ -132,7 +132,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/build
           git clone https://github.com/Al4ise/Azule.git
-          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
+          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/*-arm.deb
           mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa"
 
       - name: Patch Discord
