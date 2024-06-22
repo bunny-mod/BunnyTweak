@@ -133,12 +133,14 @@ jobs:
           ROOTLESS_DEB_FILE_NAME="${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
           echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
           echo "APP_NAME=$NAME" >> $GITHUB_ENV
+
       - name: Inject tweak
         run: |
           mkdir -p ${{ github.workspace }}/build
           git clone https://github.com/Al4ise/Azule.git
           ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
           mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa"
+
       - name: Patch Discord
         working-directory: patcher
         run : |
@@ -146,6 +148,7 @@ jobs:
             -d ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa \
             -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa \
             -i ./ipa-icons.zip
+
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
         with:
