@@ -232,4 +232,3 @@ jobs:
     #       default_author: github_actions
     #       message: "chore: update app-repo.json"
     #       add: app-repo.json
-          
