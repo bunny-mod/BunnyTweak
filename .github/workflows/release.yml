@@ -11,7 +11,7 @@ on:
             
 jobs:
   build-tweak:
-    runs-on: macos-14
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -19,11 +19,37 @@ jobs:
         with:
           submodules: true
 
-      - name: Check cache
+      - name: Download Tweak
         run: |
-          echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
+          set -e
+          
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
+          if [ "$status_code" -ne 200 ]; then
+            echo "No releases found or request failed"
+            echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          release_info=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest)
+          release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
+          control_version=$(grep '^Version:' control | cut -d ' ' -f 2)
+
+          if [ "$release_version" = "$control_version" ]; then
+            echo "Versions match. Downloading DEB files..."
+            echo "$release_info" | jq -r '.assets[] | select(.name | endswith(".deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
+            echo "DEB_DOWNLOADED=true" >> $GITHUB_ENV
+          else
+            echo "Versions do not match. No files will be downloaded."
+            echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+      - name: Check cache
+        if: env.DEB_DOWNLOADED == 'false'
+        run: echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
 
       - name: Use cache
+        if: env.DEB_DOWNLOADED == 'false'
         id: cache
         uses: actions/cache@v4
         with:
@@ -31,28 +57,27 @@ jobs:
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
       - name: Prepare Theos
+        if: env.DEB_DOWNLOADED == 'false'
         uses: Randomblock1/theos-action@v1
 
       - name: Build packages
-        run: |
-          export PATH="$(brew --prefix make)/libexec/gnubin:$PATH"
-          export THEOS="${{ github.workspace }}/theos"
-          rm -rf packages && make clean && make package FINALPACKAGE=1 && make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+        if: env.DEB_DOWNLOADED == 'false'
+        run: make package FINALPACKAGE=1 && make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: "package"
+          name: package
           path: ${{ github.workspace }}/packages/*-arm.deb
 
       - name: Upload rootless package
         uses: actions/upload-artifact@v4
         with:
-          name: "rootless package"
+          name: rootless package
           path: ${{ github.workspace }}/packages/*-arm64.deb
 
   build-ipa:
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     needs: build-tweak
 
     steps:
@@ -66,7 +91,7 @@ jobs:
 
       - name: Download and Unzip Orion
         run: |
-          curl -L -o Orion.zip https://github.com/theos/orion/releases/download/1.0.1/Orion_1.0.1.zip
+          curl -L -o Orion.zip $(curl -s https://api.github.com/repos/theos/orion/releases/latest | jq -r '.assets[0].browser_download_url')
           unzip Orion.zip
 
       - name: Download Discord IPA
@@ -74,8 +99,7 @@ jobs:
           curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
 
       - name: Make patcher directory
-        run: |
-          mkdir patcher
+        run: mkdir patcher
 
       - name: Download IPA patcher
         working-directory: patcher
@@ -103,7 +127,7 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/build
           git clone https://github.com/Al4ise/Azule.git
-          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f ${{ github.workspace }}/dev.theos.orion14_1.0.1_iphoneos-arm.deb ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
+          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
           mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa"
 
       - name: Patch Discord
@@ -121,7 +145,7 @@ jobs:
             path: ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa
 
   release-app:
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     needs: build-ipa
     permissions:
       contents: write
@@ -149,7 +173,7 @@ jobs:
       - name: Extract Discord Version
         run: |
           unzip -q ${{ env.APP_NAME }}.ipa
-          DISCORD_VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
+          DISCORD_VERSION=$(plistutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
           echo "DISCORD_VERSION=$DISCORD_VERSION" >> $GITHUB_ENV
 
       - name: Create GitHub Release
@@ -168,7 +192,7 @@ jobs:
 
   app-repo:
     continue-on-error: true
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     needs: release-app
     steps:
       - name: Checkout code
@@ -187,17 +211,16 @@ jobs:
       - name: Update app-repo.json
         run: |
           unzip -q ${{ env.APP_NAME }}.ipa
-          VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
+          VERSION=$(plistutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
           DATE=$(date -u +"%Y-%m-%d")
           IPA_SIZE=$(ls -l ${{ env.APP_NAME }}.ipa | awk '{print $5}')
           DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v$VERSION/${{ env.APP_NAME }}.ipa
           NEW_ENTRY=$(jq -n --arg version "$VERSION" --arg date "$DATE" --arg size "$IPA_SIZE" --arg downloadURL "$DOWNLOAD_URL" '{version: $version, date: $date, size: ($size | tonumber), downloadURL: $downloadURL}')
- 
           jq --argjson newEntry "$NEW_ENTRY" '.apps[0].versions |= [$newEntry] + .' app-repo.json > temp.json && mv temp.json app-repo.json
         
-      - uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          message: "chore: update app-repo.json"
-          add: app-repo.json
+    #   - uses: EndBug/add-and-commit@v9
+    #     with:
+    #       default_author: github_actions
+    #       message: "chore: update app-repo.json"
+    #       add: app-repo.json
           
