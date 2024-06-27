@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-tweak:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout code
@@ -97,9 +97,6 @@ jobs:
         with:
           merge-multiple: true
 
-      - name: Install dependencies
-        run: sudo apt update && sudo apt install libplist-utils xmlstarlet libxml2-utils -y
-
       - name: Download and Unzip Orion
         run: |
           curl -L -o Orion.zip $(curl -s https://api.github.com/repos/theos/orion/releases/latest | jq -r '.assets[0].browser_download_url')
@@ -113,7 +110,7 @@ jobs:
       - name: Download IPA patcher
         working-directory: patcher
         run: |
-          curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.linux-amd64
+          curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.macos-arm64
           chmod +x patcher
 
       - name: Download IPA icons
