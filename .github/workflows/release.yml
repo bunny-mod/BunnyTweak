@@ -85,7 +85,7 @@ jobs:
           path: ${{ env.ROOTLESS_DEB_PATH }}
 
   build-ipa:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     needs: build-tweak
 
     steps:
@@ -153,7 +153,7 @@ jobs:
             path: ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa
 
   release-app:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     needs: build-ipa
     permissions:
       contents: write
@@ -200,7 +200,7 @@ jobs:
 
   app-repo:
     continue-on-error: true
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     needs: release-app
     steps:
       - name: Checkout code

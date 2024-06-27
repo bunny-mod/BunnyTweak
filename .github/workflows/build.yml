@@ -85,7 +85,7 @@ jobs:
           path: ${{ env.ROOTLESS_DEB_PATH }}
 
   build-ipa:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     needs: build-tweak
 
     steps:
