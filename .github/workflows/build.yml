@@ -117,7 +117,6 @@ jobs:
           curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
 
       - name: Download IPA icons
-        working-directory: patcher
         run: |
           curl -L -o ipa-icons.zip https://raw.githubusercontent.com/pyoncord/assets/main/ipa-icons.zip
           unzip ipa-icons.zip
