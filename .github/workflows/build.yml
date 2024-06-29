@@ -24,32 +24,22 @@ jobs:
 
       - name: Download Tweak
         run: |
-          set -e
+          set +e
           
           release_info=$(gh api --header 'Accept: application/vnd.github+json' repos/${{ github.repository }}/releases/latest)
           status_code=$(echo $release_info | jq -r ".status")
-           if [ "$status_code" = "404" ]; then
+          
+          if [ "$status_code" != "null" ]; then
             echo "No releases found or request failed, status code: $status_code"
             echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
             exit 0
-          elif [ "$status_code" = "401" ]; then
-            echo "Unauthorized. Check your GitHub token."
-            exit 0
-          elif [ "$status_code" = "403" ]; then
-            echo "Forbidden. Insufficient permissions."
-            exit 0
-          elif [ "$status_code" = "422" ]; then
-            echo "Unprocessable Entity. Check request payload."
-            exit 0
-          elif [ "${status_code:0:1}" = "5" ]; then
-            echo "Server Error. GitHub API is unavailable."
-            exit 0
-          else
-            echo "Unknown error. Status code: $status_code"
-            exit 0
           fi
+
+          set -e
+
           release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
           control_version=$(grep '^Version:' control | cut -d ' ' -f 2)
+          
           if [ "$release_version" = "$control_version" ]; then
             echo "Versions match. Downloading DEB files..."
             echo "$release_info" | jq -r '.assets[] | select(.name | endswith(".deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
