@@ -115,19 +115,12 @@ jobs:
       - name: Download Discord IPA
         run: |
           curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
-      - name: Make patcher directory
-        run: mkdir patcher
-
-      - name: Download IPA patcher
-        working-directory: patcher
-        run: |
-          curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.mac-amd64
-          chmod +x patcher
 
       - name: Download IPA icons
         working-directory: patcher
         run: |
           curl -L -o ipa-icons.zip https://raw.githubusercontent.com/pyoncord/assets/main/ipa-icons.zip
+          unzip ipa-icons.zip
 
       - name: Extract Values
         run: |
@@ -142,16 +135,8 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/build
           bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"
-          pyzule -t -i discord.ipa -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
+          pyzule -n ${{ env.APP_NAME }} -k PyoncordIcon60x60@2x.png -d -t -i discord.ipa -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
 
-      - name: Patch Discord
-        working-directory: patcher
-        run : |
-          ./patcher \
-            -d ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa \
-            -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa \
-            -i ./ipa-icons.zip
-  
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
         with:
