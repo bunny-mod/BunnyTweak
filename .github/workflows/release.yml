@@ -139,9 +139,8 @@ jobs:
       - name: Inject tweak
         run: |
           mkdir -p ${{ github.workspace }}/build
-          git clone https://github.com/Al4ise/Azule.git
-          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
-          mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa"
+          bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"
+          pyzule -t -i discord.ipa -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
 
       - name: Patch Discord
         working-directory: patcher
