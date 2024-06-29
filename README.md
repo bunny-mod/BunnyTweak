@@ -17,8 +17,11 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 
 ### Jailed
 
-<a href="https://tinyurl.com/24zjszuf"><img src="https://i.imgur.com/VKtCePe.png" width="230"></a>
+<a href="https://tinyurl.com/24zjszuf"><img src="https://i.imgur.com/dsbDLK9.png" width="230"></a>
 <a href="https://tinyurl.com/yh455zk6"><img src="https://i.imgur.com/46qhEAv.png" width="230"></a>
+
+> [!NOTE]
+> TrollStore may display an encryption warning, which you can disregard.
 
 1. Download and install `Bunny.ipa` using your preferred sideloading method.
 
