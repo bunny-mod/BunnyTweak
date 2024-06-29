@@ -23,7 +23,7 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 > [!NOTE]
 > TrollStore may display an encryption warning, which you can disregard.
 
-1. Download and install `Bunny.ipa` using your preferred sideloading method.
+1. Download and install [Bunny.ipa](https://github.com/pyoncord/BunnyTweak/releases/latest/download/Bunny.ipa) using your preferred sideloading method.
 
 ## Building BunnyTweak locally
 
