@@ -134,15 +134,14 @@ jobs:
 
       - name: Inject tweak
         run: |
-          mkdir -p ${{ github.workspace }}/build
           bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"
-          pyzule -n ${{ env.APP_NAME }} -k PyoncordIcon60x60@2x.png -d -i discord.ipa -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
+          pyzule -n ${{ env.APP_NAME }} -k PyoncordIcon60x60@2x.png -d -i discord.ipa -o ${{ github.workspace }}/${{ env.APP_NAME }}.ipa -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
 
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
         with:
             name: ipa
-            path: ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa
+            path: ${{ github.workspace }}/${{ env.APP_NAME }}.ipa
 
   release-app:
     runs-on: macos-14
