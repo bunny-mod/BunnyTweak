@@ -3,7 +3,7 @@
 Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. There are still slight differences between these two, and this tweak may be missing some loader features.
 
 > [!NOTE]
-> As of right now this tweak does not encompass the some functionalities when running in a jailed environment with a wildcard certificate \
+> As of right now this tweak does not encompass some functionalities when running in a jailed environment with a wildcard certificate \
 > If you value these features sign the application with a local dev certificate:
 > - setAlternateAppIcon does not work, thus breaking dynamic app icons
 > - sharing files to the application/selecting items via the Files app does not work 
