@@ -105,13 +105,6 @@ jobs:
         with:
           merge-multiple: true
 
-      - name: Download and Unzip Orion
-        run: |
-          latest_release_info=$(gh api --header 'Accept: application/vnd.github+json' repos/theos/orion/releases/latest)
-          download_url=$(echo $latest_release_info | jq -r '.assets[0].browser_download_url')
-          curl -L -o Orion.zip "$download_url"
-          unzip Orion.zip
-
       - name: Download Discord IPA
         run: |
           curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
@@ -135,7 +128,7 @@ jobs:
       - name: Inject tweak
         run: |
           bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"
-          pyzule -n ${{ env.APP_NAME }} -k PyoncordIcon60x60@2x.png -d -i discord.ipa -o ${{ github.workspace }}/${{ env.APP_NAME }}.ipa -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
+          pyzule -n ${{ env.APP_NAME }} -k PyoncordIcon60x60@2x.png -d -i discord.ipa -o ${{ github.workspace }}/${{ env.APP_NAME }}.ipa -f ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
 
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
