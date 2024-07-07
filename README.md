@@ -1,6 +1,12 @@
 # BunnyTweak
 
-A rootful/rootless tweak to inject [Bunny](https://github.com/pyoncord/Bunny) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. There are still slight differences between these two, and this tweak may be missing some loader features.
+Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) into Discord. Forked [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak), modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed) behavior. There are still slight differences between these two, and this tweak may be missing some loader features.
+
+> [!NOTE]
+> As of right now this tweak does not encompass some functionalities when running in a jailed environment with a wildcard certificate \
+> If you value these features sign the application with a local dev certificate:
+> - setAlternateAppIcon does not work, thus breaking dynamic app icons
+> - sharing files to the application/selecting items via the Files app does not work 
 
 ## Installation
 
@@ -10,16 +16,20 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 > Raw decrypted IPAs which are used to provide prepatched IPAs are sourced from the [Enmity](https://github.com/enmity-mod/) community. These raw decrypted IPAs are also used throughout Enmity related projects such as [enmity-mod/tweak](https://github.com/enmity-mod/tweak/) and [acquitelol/rosiecord](https://github.com/acquitelol/rosiecord).\
 > All credits are attributed to the owner(s) of the raw IPAs.
 
-### Jailbroken (Rootful/Rootless)
+### Jailbroken
 
 1. Install the Orion runtime via your preferred package manager, by adding `https://repo.chariz.com/` to your sources, then finding `Orion Runtime`.
-1. Install Bunny by downloading the appropriate `.deb` file (or by building your own, see [Building BunnyTweak locally](#building-bunnytweak-locally)). Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks.
+1. Install Bunny by downloading the appropriate Debian package (or by building your own, see [Building BunnyTweak locally](#building-bunnytweak-locally)) and adding it to your package manager. Use the file ending in `arm.deb` for rootful jailbreaks, and the file ending in `arm64.deb` for rootless jailbreaks.
 
 ### Jailed
 
+<a href="https://tinyurl.com/24zjszuf"><img src="https://i.imgur.com/dsbDLK9.png" width="230"></a>
 <a href="https://tinyurl.com/yh455zk6"><img src="https://i.imgur.com/46qhEAv.png" width="230"></a>
 
-1. Download and install `Bunny.ipa` using your preferred sideloading method.
+> [!NOTE]
+> TrollStore may display an encryption warning, which you can disregard.
+
+1. Download and install [Bunny.ipa](https://github.com/pyoncord/BunnyTweak/releases/latest/download/Bunny.ipa) using your preferred sideloading method.
 
 ## Building BunnyTweak locally
 

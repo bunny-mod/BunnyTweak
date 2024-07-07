@@ -9,9 +9,12 @@ on:
             required: true
             type: string
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   build-tweak:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout code
@@ -21,17 +24,22 @@ jobs:
 
       - name: Download Tweak
         run: |
-          set -e
+          set +e
           
-          status_code=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
-          if [ "$status_code" -ne 200 ]; then
-            echo "No releases found or request failed"
+          release_info=$(gh api --header 'Accept: application/vnd.github+json' repos/${{ github.repository }}/releases/latest)
+          status_code=$(echo $release_info | jq -r ".status")
+          
+          if [ "$status_code" != "null" ]; then
+            echo "No releases found or request failed, status code: $status_code"
             echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
             exit 0
           fi
-          release_info=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest)
+
+          set -e
+
           release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
           control_version=$(grep '^Version:' control | cut -d ' ' -f 2)
+          
           if [ "$release_version" = "$control_version" ]; then
             echo "Versions match. Downloading DEB files..."
             echo "$release_info" | jq -r '.assets[] | select(.name | endswith(".deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
@@ -85,7 +93,7 @@ jobs:
           path: ${{ env.ROOTLESS_DEB_PATH }}
 
   build-ipa:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     needs: build-tweak
 
     steps:
@@ -97,29 +105,14 @@ jobs:
         with:
           merge-multiple: true
 
-      - name: Install dependencies
-        run: sudo apt update && sudo apt install libplist-utils xmlstarlet libxml2-utils -y
-
-      - name: Download and Unzip Orion
-        run: |
-          curl -L -o Orion.zip $(curl -s https://api.github.com/repos/theos/orion/releases/latest | jq -r '.assets[0].browser_download_url')
-          unzip Orion.zip
       - name: Download Discord IPA
         run: |
           curl -L -o discord.ipa ${{ github.event.inputs.ipa_url }}
-      - name: Make patcher directory
-        run: mkdir patcher
-
-      - name: Download IPA patcher
-        working-directory: patcher
-        run: |
-          curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.linux-amd64
-          chmod +x patcher
 
       - name: Download IPA icons
-        working-directory: patcher
         run: |
           curl -L -o ipa-icons.zip https://raw.githubusercontent.com/pyoncord/assets/main/ipa-icons.zip
+          unzip ipa-icons.zip
 
       - name: Extract Values
         run: |
@@ -132,21 +125,11 @@ jobs:
 
       - name: Inject tweak
         run: |
-          mkdir -p ${{ github.workspace }}/build
-          git clone https://github.com/Al4ise/Azule.git
-          ./Azule/azule -i discord.ipa -o ${{ github.workspace }}/build -f $(find ${{ github.workspace }} -name 'dev.theos.orion14_*_iphoneos-arm.deb' | head -n 1) ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
-          mv "${{ github.workspace }}/build/"*.ipa "${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa"
+          bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"
+          pyzule -n ${{ env.APP_NAME }} -k PyoncordIcon60x60@2x.png -d -i discord.ipa -o ${{ github.workspace }}/${{ env.APP_NAME }}.ipa -f ${{ github.workspace }}/${{ env.DEB_FILE_NAME }}
 
-      - name: Patch Discord
-        working-directory: patcher
-        run : |
-          ./patcher \
-            -d ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa \
-            -o ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa \
-            -i ./ipa-icons.zip
-  
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
         with:
             name: ipa
-            path: ${{ github.workspace }}/build/${{ env.APP_NAME }}.ipa
+            path: ${{ github.workspace }}/${{ env.APP_NAME }}.ipa
