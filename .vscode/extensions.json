@@ -1,0 +1,9 @@
+{
+	"recommendations": [
+		"tale.logos-vscode",
+		"spencerwmiles.vscode-task-buttons",
+		"redhat.vscode-yaml",
+		"davidanson.vscode-markdownlint",
+		"SteefH.external-formatters"
+	]
+}

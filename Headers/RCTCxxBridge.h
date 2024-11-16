@@ -1,3 +1,5 @@
 @interface RCTCxxBridge : NSObject
-- (void)executeApplicationScript:(NSData *)script url:(NSURL *)url async:(BOOL)async;
-@end 
+- (void)executeApplicationScript:(NSData *)script
+                             url:(NSURL *)url
+                           async:(BOOL)async;
+@end

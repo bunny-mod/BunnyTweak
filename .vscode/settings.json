@@ -11,4 +11,25 @@
 			"tooltip": "Make and copy Tweak"
 		}
 	],
+	"externalFormatters.languages": {
+		"logos": {
+			"command": "python3",
+			"arguments": [
+				"../.vscode/logos-format.py",
+				"--assume-filename",
+				"objc"
+			]
+		}
+	},
+	"yaml.schemas": {
+		"https://json.schemastore.org/github-workflow.json": [
+			"*.github/workflows/*.yaml",
+			"*.github/workflows/*.yml",
+		],
+		"https://json.schemastore.org/github-action.json": [
+			"action.yaml",
+			"action.yml",
+		]
+	},
+	"editor.formatOnSave": true
 }
