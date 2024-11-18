@@ -33,10 +33,6 @@ To resolve the fixable issues, you need to match the app's bundle ID with your p
     <td>Cannot use passkeys</td>
     <td>✗</td>
 </tr>
-<tr>
-    <td></td>
-    <td></td>
-</tr>
 </table>
 
 ## Doing this will break notifications if the app is backgrounded or closed
